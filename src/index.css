@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --background: 40 10% 97%;
+    --foreground: 0 0% 7%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 7%;
+
+    --primary: 0 0% 7%;
+    --primary-foreground: 40 10% 97%;
+
+    --secondary: 30 8% 94%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 30 6% 93%;
+    --muted-foreground: 20 6% 44%;
+
+    --accent: 126 40% 46%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 6 72% 49%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 30 10% 90%;
+    --input: 30 10% 90%;
+    --ring: 0 0% 7%;
+
+    --radius: 0.75rem;
+
+    /* Custom tokens */
+    --sidebar-bg: 0 0% 7%;
+    --sidebar-fg: 0 0% 70%;
+    --sidebar-fg-active: 0 0% 96%;
+    --sidebar-accent: 0 0% 14%;
+
+    --success: 126 40% 46%;
+    --success-light: 126 30% 80%;
+    --danger: 6 72% 49%;
+    --warning: 36 90% 56%;
+
+    --chart-1: 126 40% 46%;
+    --chart-2: 20 12% 50%;
+    --chart-3: 0 0% 7%;
+    --chart-4: 30 8% 70%;
+    --chart-5: 6 72% 49%;
+
+    --sidebar-background: 0 0% 7%;
+    --sidebar-foreground: 0 0% 70%;
+    --sidebar-primary: 0 0% 96%;
+    --sidebar-primary-foreground: 0 0% 7%;
+    --sidebar-accent: 0 0% 14%;
+    --sidebar-accent-foreground: 0 0% 96%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 0 0% 40%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    text-wrap: balance;
+    @apply font-semibold tracking-tight;
+  }
+
+  p {
+    text-wrap: pretty;
+    overflow-wrap: break-word;
+  }
+}
+
+@layer utilities {
+  .stat-card {
+    @apply bg-card rounded-2xl p-6 shadow-sm border border-border/50 transition-shadow duration-200;
+  }
+  .stat-card:hover {
+    box-shadow: 0 4px 24px -4px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  }
+}
+
+/* Scroll reveal animation */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-reveal-up {
+  animation: reveal-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out both;
+}
