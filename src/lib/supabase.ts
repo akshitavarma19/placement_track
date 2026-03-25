@@ -7,4 +7,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Missing Supabase environment variables. Auth will not work until they are added to .env');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Fallback to a placeholder URL if missing to prevent createClient from throwing an error at top level
+export const supabase = createClient(
+  supabaseUrl || 'https://placeholder.supabase.co', 
+  supabaseAnonKey || 'placeholder'
+);
+
