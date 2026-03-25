@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { apifyClient } from '@/lib/apify';
+// Removed apifyClient SDK import to prevent browser-side crashes
+
 
 export interface JobPosting {
   title: string;
@@ -16,8 +17,10 @@ export interface JobPosting {
 }
 
 const fetchJobs = async (): Promise<JobPosting[]> => {
-  // Check if we have a token. If not, return dummy data to prevent breaking the UI.
-  if (import.meta.env.VITE_APIFY_TOKEN === 'your_apify_token_here' || !import.meta.env.VITE_APIFY_TOKEN) {
+  const token = import.meta.env.VITE_APIFY_TOKEN;
+
+  // Check if we have a valid token.
+  if (!token || token === 'your_apify_token_here') {
     console.warn('Apify token not set. Returning dummy data.');
     return [
       { companyName: "TCS", title: "Frontend Developer", location: "Bangalore", postedAt: "2024-03-20", status: "Active", sector: "IT Services" },
@@ -29,23 +32,40 @@ const fetchJobs = async (): Promise<JobPosting[]> => {
   }
 
   try {
-    // Example: Using Google Jobs Scraper
-    // actorId: 'apify/google-jobs-scraper'
-    // This is just a representation, actual configuration would depend on the actor.
-    const run = await apifyClient.actor('apify/google-jobs-scraper').call({
-      queries: 'software engineer in India',
-      maxPagesPerQuery: 1,
+    // 1. Run the actor
+    const actorId = 'apify/google-jobs-scraper';
+    const runResponse = await fetch(`https://api.apify.com/v2/acts/${actorId}/calls?token=${token}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        queries: 'software engineer in India',
+        maxPagesPerQuery: 1,
+      }),
     });
 
-    const { items } = await apifyClient.dataset(run.defaultDatasetId).listItems();
+    if (!runResponse.ok) {
+      throw new Error(`Apify Actor Run failed: ${runResponse.statusText}`);
+    }
+
+    const { data: runData } = await runResponse.json();
+
+    // 2. Fetch the dataset items
+    const datasetUrl = `https://api.apify.com/v2/datasets/${runData.defaultDatasetId}/items?token=${token}`;
+    const itemsResponse = await fetch(datasetUrl);
     
-    return items.map((item: Record<string, unknown>) => ({
-      title: item.title as string,
-      companyName: (item.companyName || item.company) as string,
-      location: item.location as string,
-      postedAt: (item.postedAt || new Date().toISOString()) as string,
-      salary: item.salary as JobPosting['salary'],
-      sector: (item.sector || 'IT Services') as string,
+    if (!itemsResponse.ok) {
+      throw new Error(`Apify Dataset fetch failed: ${itemsResponse.statusText}`);
+    }
+
+    const items = await itemsResponse.json();
+    
+    return items.map((item: any) => ({
+      title: item.title,
+      companyName: item.companyName || item.company,
+      location: item.location,
+      postedAt: item.postedAt || new Date().toISOString(),
+      salary: item.salary,
+      sector: item.sector || 'IT Services',
       status: 'Active',
     }));
   } catch (error) {
@@ -53,6 +73,7 @@ const fetchJobs = async (): Promise<JobPosting[]> => {
     throw error;
   }
 };
+
 
 export function useJobMarket() {
   return useQuery({
