@@ -1,15 +1,41 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useStudents } from "@/hooks/useStudents";
+import { Loader2 } from "lucide-react";
 
-const data = [
+const historicalData = [
   { year: "2019", placed: 780, total: 1020 },
   { year: "2020", placed: 650, total: 980 },
   { year: "2021", placed: 820, total: 1050 },
   { year: "2022", placed: 950, total: 1100 },
   { year: "2023", placed: 1120, total: 1200 },
-  { year: "2024", placed: 1247, total: 1430 },
 ];
 
 export default function PlacementChart() {
+  const { students, loading } = useStudents();
+
+  if (loading) {
+    return (
+      <div className="stat-card h-[360px] flex items-center justify-center bg-secondary/30 animate-pulse rounded-xl">
+        <Loader2 className="w-8 h-8 animate-spin text-primary/50" />
+      </div>
+    );
+  }
+
+  let total2024 = 0;
+  let placed2024 = 0;
+  
+  students.forEach((s) => {
+    if (s.year === 2024) {
+      total2024++;
+      if (s.status === "Placed") placed2024++;
+    }
+  });
+
+  const data = [
+    ...historicalData,
+    { year: "2024 (Live)", placed: placed2024, total: total2024 }
+  ];
+
   return (
     <div className="stat-card animate-reveal-up" style={{ animationDelay: "320ms" }}>
       <div className="flex items-center justify-between mb-6">

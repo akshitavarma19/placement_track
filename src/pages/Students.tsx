@@ -1,19 +1,7 @@
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardHeader from "@/components/DashboardHeader";
-import { Users, GraduationCap, Award, TrendingUp } from "lucide-react";
-
-const students = [
-  { name: "Aarav Sharma", branch: "CSE", cgpa: 9.1, status: "Placed", company: "Google", package: "₹28L", year: 2024 },
-  { name: "Priya Mehta", branch: "ECE", cgpa: 8.7, status: "Placed", company: "Microsoft", package: "₹22L", year: 2024 },
-  { name: "Rohan Verma", branch: "CSE", cgpa: 8.4, status: "Placed", company: "TCS", package: "₹7.5L", year: 2024 },
-  { name: "Sneha Patel", branch: "IT", cgpa: 8.9, status: "Placed", company: "Infosys", package: "₹6.5L", year: 2024 },
-  { name: "Karan Singh", branch: "ME", cgpa: 7.8, status: "Un-placed", company: "—", package: "—", year: 2024 },
-  { name: "Anjali Joshi", branch: "CSE", cgpa: 9.3, status: "Placed", company: "Amazon", package: "₹32L", year: 2024 },
-  { name: "Dev Nair", branch: "CSE", cgpa: 8.0, status: "Placed", company: "Wipro", package: "₹5.5L", year: 2024 },
-  { name: "Meera Iyer", branch: "IT", cgpa: 7.5, status: "Un-placed", company: "—", package: "—", year: 2024 },
-  { name: "Arjun Reddy", branch: "ECE", cgpa: 8.2, status: "Placed", company: "Cognizant", package: "₹5L", year: 2024 },
-  { name: "Pooja Gupta", branch: "CSE", cgpa: 9.0, status: "Placed", company: "Adobe", package: "₹18L", year: 2024 },
-];
+import { Users, GraduationCap, Award, TrendingUp, Loader2 } from "lucide-react";
+import { useStudents } from "@/hooks/useStudents";
 
 const statusColor: Record<string, { color: string; bg: string }> = {
   Placed: { color: "#3EA945", bg: "#3EA94520" },
@@ -21,7 +9,22 @@ const statusColor: Record<string, { color: string; bg: string }> = {
 };
 
 export default function Students() {
+  const { students, loading } = useStudents();
   const placed = students.filter((s) => s.status === "Placed").length;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <DashboardSidebar />
+        <main className="flex-1 ml-[240px] p-8 max-w-[1280px]">
+          <DashboardHeader />
+          <div className="flex items-center justify-center h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -33,9 +36,9 @@ export default function Students() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
           {[
             { label: "Total Students", value: students.length, icon: Users, change: "2024 batch" },
-            { label: "Placed", value: placed, icon: Award, change: `${Math.round((placed / students.length) * 100)}% rate` },
+            { label: "Placed", value: placed, icon: Award, change: `${students.length ? Math.round((placed / students.length) * 100) : 0}% rate` },
             { label: "Un-placed", value: students.length - placed, icon: GraduationCap, change: "seeking offers" },
-            { label: "Avg CGPA", value: (students.reduce((a, s) => a + s.cgpa, 0) / students.length).toFixed(1), icon: TrendingUp, change: "out of 10.0" },
+            { label: "Avg CGPA", value: students.length ? (students.reduce((a, s) => a + s.cgpa, 0) / students.length).toFixed(1) : "0.0", icon: TrendingUp, change: "out of 10.0" },
           ].map((s, i) => (
             <div key={s.label} className="stat-card animate-reveal-up" style={{ animationDelay: `${i * 80}ms` }}>
               <div className="flex items-center justify-between mb-4">

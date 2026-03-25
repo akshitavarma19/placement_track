@@ -1,41 +1,74 @@
-import { Users, TrendingUp, IndianRupee, Building2 } from "lucide-react";
-
-const stats = [
-  {
-    label: "Placement Rate",
-    value: "87.3%",
-    change: "+4.2%",
-    positive: true,
-    subtitle: "vs last year",
-    icon: TrendingUp,
-  },
-  {
-    label: "Students Placed",
-    value: "1,247",
-    change: "+12.8%",
-    positive: true,
-    subtitle: "vs last year",
-    icon: Users,
-  },
-  {
-    label: "Avg. Package",
-    value: "₹8.4L",
-    change: "+18.5%",
-    positive: true,
-    subtitle: "vs last year",
-    icon: IndianRupee,
-  },
-  {
-    label: "Top Recruiter",
-    value: "TCS",
-    change: "142 offers",
-    positive: true,
-    subtitle: "this season",
-    icon: Building2,
-  },
-];
+import { Users, TrendingUp, IndianRupee, Building2, Loader2 } from "lucide-react";
+import { useStudents } from "@/hooks/useStudents";
+import { useCompanies } from "@/hooks/useCompanies";
 
 export default function StatCards() {
+  const { students, loading: loading1 } = useStudents();
+  const { companies, loading: loading2 } = useCompanies();
+
+  if (loading1 || loading2) {
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="stat-card h-[132px] animate-pulse bg-secondary/50 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const placed = students.filter((s) => s.status === "Placed").length;
+  const placementRate = students.length ? Math.round((placed / students.length) * 100) : 0;
+  
+  let totalPackage = 0;
+  let packageCount = 0;
+  students.forEach((s) => {
+    if (s.package && s.package !== "—") {
+      const val = parseFloat(s.package.replace(/[^0-9.]/g, ''));
+      if (!isNaN(val)) {
+        totalPackage += val;
+        packageCount++;
+      }
+    }
+  });
+  const avgPackage = packageCount > 0 ? (totalPackage / packageCount).toFixed(1) : "0.0";
+  
+  const topCompany = companies.length > 0 ? [...companies].sort((a, b) => b.offers - a.offers)[0] : null;
+
+  const stats = [
+    {
+      label: "Placement Rate",
+      value: `${placementRate}%`,
+      change: "Live",
+      positive: true,
+      subtitle: "from database",
+      icon: TrendingUp,
+    },
+    {
+      label: "Students Placed",
+      value: placed.toString(),
+      change: "Live",
+      positive: true,
+      subtitle: "from database",
+      icon: Users,
+    },
+    {
+      label: "Avg. Package",
+      value: `₹${avgPackage}L`,
+      change: "Live",
+      positive: true,
+      subtitle: "from database",
+      icon: IndianRupee,
+    },
+    {
+      label: "Top Recruiter",
+      value: topCompany ? topCompany.name : "N/A",
+      change: topCompany ? `${topCompany.offers} offers` : "0 offers",
+      positive: true,
+      subtitle: "from database",
+      icon: Building2,
+    },
+  ];
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, i) => (

@@ -1,19 +1,7 @@
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardHeader from "@/components/DashboardHeader";
-import { Building2, Users, TrendingUp, CheckCircle } from "lucide-react";
-
-const companies = [
-  { name: "TCS", sector: "IT Services", offers: 142, avgPackage: "₹7.5L", status: "Active", visits: 3, mode: "On-Campus" },
-  { name: "Infosys", sector: "IT Services", offers: 98, avgPackage: "₹6.5L", status: "Active", visits: 2, mode: "On-Campus" },
-  { name: "Wipro", sector: "IT Services", offers: 76, avgPackage: "₹5.5L", status: "Active", visits: 2, mode: "On-Campus" },
-  { name: "Cognizant", sector: "IT Services", offers: 64, avgPackage: "₹5L", status: "Completed", visits: 1, mode: "On-Campus" },
-  { name: "Accenture", sector: "Consulting", offers: 52, avgPackage: "₹8L", status: "Active", visits: 2, mode: "Hybrid" },
-  { name: "Capgemini", sector: "IT Services", offers: 41, avgPackage: "₹5.8L", status: "Upcoming", visits: 0, mode: "On-Campus" },
-  { name: "Google", sector: "Product", offers: 4, avgPackage: "₹28L", status: "Completed", visits: 1, mode: "Virtual" },
-  { name: "Microsoft", sector: "Product", offers: 6, avgPackage: "₹22L", status: "Completed", visits: 1, mode: "Virtual" },
-  { name: "Amazon", sector: "E-Commerce", offers: 8, avgPackage: "₹32L", status: "Completed", visits: 1, mode: "Virtual" },
-  { name: "Adobe", sector: "Product", offers: 5, avgPackage: "₹18L", status: "Upcoming", visits: 0, mode: "Virtual" },
-];
+import { Building2, Users, TrendingUp, CheckCircle, Loader2 } from "lucide-react";
+import { useCompanies } from "@/hooks/useCompanies";
 
 const statusColor: Record<string, { color: string; bg: string }> = {
   Active: { color: "#3EA945", bg: "#3EA94520" },
@@ -22,8 +10,23 @@ const statusColor: Record<string, { color: string; bg: string }> = {
 };
 
 export default function Companies() {
+  const { companies, loading } = useCompanies();
   const active = companies.filter((c) => c.status === "Active").length;
   const totalOffers = companies.reduce((a, c) => a + c.offers, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <DashboardSidebar />
+        <main className="flex-1 ml-[240px] p-8 max-w-[1280px]">
+          <DashboardHeader />
+          <div className="flex items-center justify-center h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex">
@@ -36,7 +39,7 @@ export default function Companies() {
             { label: "Total Companies", value: companies.length, icon: Building2, change: "registered" },
             { label: "Active Recruiters", value: active, icon: CheckCircle, change: "currently hiring" },
             { label: "Total Offers", value: totalOffers, icon: Users, change: "this season" },
-            { label: "Avg Offers/Co.", value: Math.round(totalOffers / companies.length), icon: TrendingUp, change: "per recruiter" },
+            { label: "Avg Offers/Co.", value: companies.length ? Math.round(totalOffers / companies.length) : 0, icon: TrendingUp, change: "per recruiter" },
           ].map((s, i) => (
             <div key={s.label} className="stat-card animate-reveal-up" style={{ animationDelay: `${i * 80}ms` }}>
               <div className="flex items-center justify-between mb-4">
@@ -78,7 +81,7 @@ export default function Companies() {
                     </td>
                     <td className="py-3 pr-4 text-muted-foreground">{c.sector}</td>
                     <td className="py-3 pr-4 font-semibold text-foreground">{c.offers}</td>
-                    <td className="py-3 pr-4 font-semibold" style={{ color: "hsl(var(--success))" }}>{c.avgPackage}</td>
+                    <td className="py-3 pr-4 font-semibold" style={{ color: "hsl(var(--success))" }}>{c.avg_package}</td>
                     <td className="py-3 pr-4 text-muted-foreground">{c.mode}</td>
                     <td className="py-3">
                       <span className="text-[11px] font-semibold px-2 py-1 rounded-lg"
