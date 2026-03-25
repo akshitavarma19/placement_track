@@ -1,27 +1,14 @@
 import DashboardSidebar from "@/components/DashboardSidebar";
 import DashboardHeader from "@/components/DashboardHeader";
-import { Zap, TrendingUp, TrendingDown, Minus } from "lucide-react";
-
-const skills = [
-  { name: "Python", demand: 92, category: "Programming", trend: "up", students: 834, change: "+12%" },
-  { name: "React.js", demand: 85, category: "Frontend", trend: "up", students: 621, change: "+18%" },
-  { name: "Java", demand: 78, category: "Programming", trend: "stable", students: 712, change: "+2%" },
-  { name: "SQL", demand: 74, category: "Database", trend: "stable", students: 690, change: "+3%" },
-  { name: "Machine Learning", demand: 68, category: "AI/ML", trend: "up", students: 345, change: "+34%" },
-  { name: "Cloud (AWS/Azure)", demand: 63, category: "DevOps", trend: "up", students: 278, change: "+28%" },
-  { name: "Data Analysis", demand: 58, category: "Analytics", trend: "up", students: 412, change: "+15%" },
-  { name: "Node.js", demand: 54, category: "Backend", trend: "up", students: 389, change: "+22%" },
-  { name: "TypeScript", demand: 49, category: "Frontend", trend: "up", students: 256, change: "+41%" },
-  { name: "Manual Testing", demand: 28, category: "QA", trend: "down", students: 198, change: "-22%" },
-  { name: "PHP", demand: 22, category: "Backend", trend: "down", students: 145, change: "-18%" },
-  { name: "Angular", demand: 35, category: "Frontend", trend: "stable", students: 187, change: "-5%" },
-];
+import { Zap, TrendingUp, TrendingDown, Minus, Loader2 } from "lucide-react";
+import { useSkills } from "@/hooks/useSkills";
 
 const trendIcon = {
   up: TrendingUp,
   down: TrendingDown,
   stable: Minus,
 };
+
 const trendColor = {
   up: "hsl(var(--success))",
   down: "hsl(var(--danger))",
@@ -40,6 +27,24 @@ const categoryColors: Record<string, string> = {
 };
 
 export default function Skills() {
+  const { skills, loading } = useSkills();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex">
+        <DashboardSidebar />
+        <main className="flex-1 ml-[240px] p-8 max-w-[1280px]">
+          <DashboardHeader />
+          <div className="flex items-center justify-center h-[60vh]">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const topSkill = skills.length > 0 ? skills.sort((a, b) => b.demand - a.demand)[0] : null;
+
   return (
     <div className="min-h-screen bg-background flex">
       <DashboardSidebar />
@@ -49,9 +54,9 @@ export default function Skills() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
           {[
             { label: "Skills Tracked", value: skills.length, change: "across categories" },
-            { label: "Top Skill", value: "Python", change: "92% demand index" },
-            { label: "Fastest Growing", value: "TypeScript", change: "+41% this quarter" },
-            { label: "Declining Skill", value: "Manual QA", change: "-22% demand" },
+            { label: "Top Skill", value: topSkill?.name || "N/A", change: topSkill ? `${topSkill.demand}% demand index` : "No data" },
+            { label: "Growth Trends", value: "Live", change: "from database" },
+            { label: "Students Trained", value: skills.reduce((acc, s) => acc + s.students_count, 0).toLocaleString(), change: "total enrollment" },
           ].map((s, i) => (
             <div key={s.label} className="stat-card animate-reveal-up" style={{ animationDelay: `${i * 80}ms` }}>
               <div className="flex items-center justify-between mb-4">
@@ -75,22 +80,22 @@ export default function Skills() {
           </div>
           <div className="space-y-5">
             {skills.map((skill) => {
-              const Icon = trendIcon[skill.trend as keyof typeof trendIcon];
+              const Icon = trendIcon[skill.trend as keyof typeof trendIcon] || Minus;
               return (
                 <div key={skill.name}>
                   <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md"
-                        style={{ background: `${categoryColors[skill.category]}22`, color: categoryColors[skill.category] }}>
+                        style={{ background: `${categoryColors[skill.category] || "#94a3b8"}22`, color: categoryColors[skill.category] || "#94a3b8" }}>
                         {skill.category}
                       </span>
                       <span className="text-[13px] font-medium text-foreground">{skill.name}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-[12px] font-semibold flex items-center gap-1"
-                        style={{ color: trendColor[skill.trend as keyof typeof trendColor] }}>
+                        style={{ color: trendColor[skill.trend as keyof typeof trendColor] || "inherit" }}>
                         <Icon className="w-3.5 h-3.5" />
-                        {skill.change}
+                        {skill.growth_rate}
                       </span>
                       <span className="text-[12px] font-semibold text-muted-foreground tabular-nums w-8 text-right">{skill.demand}%</span>
                     </div>
@@ -104,13 +109,17 @@ export default function Skills() {
                       }}
                     />
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-1">{skill.students.toLocaleString()} students trained</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{skill.students_count.toLocaleString()} students trained</p>
                 </div>
               );
             })}
+            {skills.length === 0 && (
+              <p className="text-center text-muted-foreground py-8">No skill data found in database.</p>
+            )}
           </div>
         </div>
       </main>
     </div>
   );
 }
+
